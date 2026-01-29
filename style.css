@@ -1,0 +1,30 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#map {
+    height: 100vh; 
+    width: 100%;
+}
+
+.popup-img {
+    width: 250px;      
+    height: auto;
+    border-radius: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+}
+
+.popup-title {
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 3px;
+}
