@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Brak współrzędnych lat/lng' });
     }
 
-    const API_KEY = '0wcTdKgTcKwKNXBUaY7EXJ79MwFNyn1i';
+    const API_KEY = 'bgdTmta3Ki8aEW35GEIfa2KVmw0RAMnZ';
     const windyUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},150&include=images,location,player&limit=40`;
 
     console.log(`Pobieranie dla: ${lat}, ${lng}`);
