@@ -17,9 +17,9 @@ async function fetchCameras() {
 
     const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40`;
     
-    const proxyUrl = `https://thingproxy.freeboard.io/fetch/${targetUrl}`;
+    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
     
-    console.log(`📡 Pobieram (ThingProxy): ${lat}, ${lng}`);
+    console.log(`📡 Pobieram (CodeTabs): ${lat}, ${lng}`);
 
     try {
         const response = await fetch(proxyUrl, {
