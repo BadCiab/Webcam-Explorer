@@ -15,26 +15,21 @@ async function fetchCameras() {
     const lng = center.lng.toFixed(4);
     const radius = 150; 
 
-    const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40`;
+    const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40&key=${MY_API_KEY}`;
     
     const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
     
-    console.log(`📡 Pobieram kamery (przez proxy) dla: ${lat}, ${lng}`);
+    console.log(`📡 Pobieram kamery (Key w URL): ${lat}, ${lng}`);
 
     try {
         const response = await fetch(proxyUrl, {
             method: 'GET',
-            headers: {
-                'x-windy-key': MY_API_KEY
-            },
-            cache: 'no-store' 
+            cache: 'no-store'
         });
 
         if (!response.ok) {
-            if (response.status === 403) {
-                throw new Error("Błąd 403: Serwer odrzucił klucz API. Sprawdź 'Allowed Domains' w panelu Windy.");
-            }
-            throw new Error(`Błąd API: ${response.status} ${response.statusText}`);
+            const text = await response.text();
+            throw new Error(`Błąd API/Proxy: ${response.status} - ${text}`);
         }
 
         const data = await response.json();
@@ -48,11 +43,11 @@ async function fetchCameras() {
             });
             console.log(`Dodano ${data.webcams.length} kamer do mapy.`);
         } else {
-            console.warn("⚠️ API zwróciło pustą listę kamer dla tego obszaru.");
+            console.warn("⚠️ API zwróciło pustą listę kamer.");
         }
 
     } catch (error) {
-        console.error("❌ BŁĄD KRYTYCZNY:", error);
+        console.error("❌ BŁĄD:", error);
     }
 }
 
@@ -61,7 +56,6 @@ function addCameraMarker(cam) {
     const lng = cam.location?.longitude;
     const title = cam.title || "Kamera bez nazwy";
     
-    // Logika wyboru zdjęcia (bezpieczna)
     let imgUrl = 'https://via.placeholder.com/300x200?text=Brak+podgladu';
     
     if (cam.images?.current?.preview) {
