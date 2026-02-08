@@ -1,36 +1,42 @@
 // api/proxy.js
-export default async function handler(request, response) {
-  // Pobieramy parametry z adresu URL
-  const { lat, lng } = request.query;
-
-  // Twój klucz API (bezpieczny po stronie serwera)
-  const API_KEY = '0wcTdKgTcKwKNXBUaY7EXJ79MwFNyn1i';
-
-  if (!lat || !lng) {
-    return response.status(400).json({ error: 'Brak współrzędnych' });
-  }
-
-  // Budujemy adres do Windy
-  const windyUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},150&include=images,location,player&limit=40`;
-
+module.exports = async (req, res) => {
   try {
-    // Serwer (Vercel) pyta serwer (Windy) - to jest dozwolone!
-    const apiResponse = await fetch(windyUrl, {
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Brak współrzędnych lat/lng' });
+    }
+
+    const API_KEY = '0wcTdKgTcKwKNXBUaY7EXJ79MwFNyn1i';
+    const windyUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},150&include=images,location,player&limit=40`;
+
+    // Logowanie dla panelu Vercel
+    console.log(`Pobieranie dla: ${lat}, ${lng}`);
+
+    // Dynamiczny import node-fetch dla pewności (jeśli środowisko tego wymaga)
+    // Ale w Node 18+ fetch jest wbudowany. Spróbujmy standardowego fetcha w bloku try.
+    
+    const response = await fetch(windyUrl, {
       headers: {
         'x-windy-key': API_KEY
       }
     });
 
-    if (!apiResponse.ok) {
-      throw new Error(`Windy error: ${apiResponse.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Windy Error:', errorText);
+      return res.status(response.status).json({ error: `Windy API error: ${errorText}` });
     }
 
-    const data = await apiResponse.json();
-    
-    // Odsyłamy dane do Twojej strony
-    response.status(200).json(data);
-    
+    const data = await response.json();
+    return res.status(200).json(data);
+
   } catch (error) {
-    response.status(500).json({ error: error.message });
+    console.error('CRASH:', error);
+    // To wyśle treść błędu do Twojej konsoli w przeglądarce
+    return res.status(500).json({ 
+      error: 'Serwer Vercel napotkał błąd', 
+      details: error.message 
+    });
   }
-}
+};
