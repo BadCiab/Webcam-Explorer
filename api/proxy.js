@@ -10,26 +10,29 @@ module.exports = async (req, res) => {
     const API_KEY = '0wcTdKgTcKwKNXBUaY7EXJ79MwFNyn1i';
     const windyUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},150&include=images,location,player&limit=40`;
 
-    // Tutaj musimy "udawać" przeglądarkę, wysyłając Origin
+    console.log(`Pobieranie dla: ${lat}, ${lng}`);
+
     const response = await fetch(windyUrl, {
       headers: {
         'x-windy-key': API_KEY,
-        // WAŻNE: Przedstawiamy się domeną, którą wpisałeś w panelu Windy!
-        'Origin': 'https://webcam-explorer-ten.vercel.app' 
+        // UDAJEMY PRAWDZIWĄ PRZEGLĄDARKĘ (To często naprawia błąd 403)
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json'
       }
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Windy Error:', errorText);
-      return res.status(response.status).json({ error: `Windy API error: ${errorText}` });
+      console.error('Windy Error:', response.status, errorText);
+      return res.status(response.status).json({ error: `Windy API error: ${response.status} ${errorText}` });
     }
 
     const data = await response.json();
     
-    // Dodajemy nagłówki CORS, żeby Twoja mapa mogła odebrać dane
+    // Ustawiamy CORS, żeby Twoja mapa mogła odebrać dane
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
     
     return res.status(200).json(data);
 
