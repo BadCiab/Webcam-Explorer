@@ -15,21 +15,20 @@ async function fetchCameras() {
     const lng = center.lng.toFixed(4);
     const radius = 150; 
 
-    const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40&key=${MY_API_KEY}`;
+    const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40&key=${MY_API_KEY}&nocache=${Date.now()}`;
     
-    const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
     
-    console.log(`📡 Pobieram kamery (Key w URL): ${lat}, ${lng}`);
+    console.log(`📡 Pobieram (AllOrigins): ${lat}, ${lng}`);
 
     try {
         const response = await fetch(proxyUrl, {
-            method: 'GET',
-            cache: 'no-store'
+            method: 'GET'
+
         });
 
         if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Błąd API/Proxy: ${response.status} - ${text}`);
+            throw new Error(`Błąd Proxy/API: ${response.status}`);
         }
 
         const data = await response.json();
