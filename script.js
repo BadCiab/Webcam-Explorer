@@ -9,30 +9,24 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const markersGroup = L.layerGroup().addTo(map);
 
+// --- OSTATECZNA WERSJA (Vercel) ---
+
 async function fetchCameras() {
     const center = map.getCenter();
     const lat = center.lat.toFixed(4);
     const lng = center.lng.toFixed(4);
-    const radius = 150; 
+    
+    // MAGIA VERCEL:
+    // Odwołujemy się do naszego pliku api/proxy.js po prostu przez ścieżkę.
+    // Przeglądarka traktuje to jak plik lokalny, więc ZERO problemów z CORS.
+    const url = `/api/proxy?lat=${lat}&lng=${lng}`;
 
-    const targetUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},${radius}&include=images,location,player&limit=40`;
-    
-    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-    
-    console.log(`📡 Pobieram (CodeTabs): ${lat}, ${lng}`);
+    console.log(`📡 Pobieram z Vercel API: ${lat}, ${lng}`);
 
     try {
-        const response = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: {
-                'x-windy-key': MY_API_KEY
-            }
-        });
+        const response = await fetch(url);
 
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Błąd Proxy/API: ${response.status} - ${text}`);
-        }
+        if (!response.ok) throw new Error(`Błąd serwera: ${response.status}`);
 
         const data = await response.json();
         console.log("✅ Dane pobrane:", data);
@@ -40,12 +34,10 @@ async function fetchCameras() {
         markersGroup.clearLayers();
 
         if (data && data.webcams && data.webcams.length > 0) {
-            data.webcams.forEach(cam => {
-                addCameraMarker(cam);
-            });
-            console.log(`Dodano ${data.webcams.length} kamer do mapy.`);
+            data.webcams.forEach(addCameraMarker);
+            console.log(`Dodano ${data.webcams.length} kamer.`);
         } else {
-            console.warn("⚠️ API zwróciło pustą listę kamer.");
+            console.warn("⚠️ Brak kamer w tym rejonie.");
         }
 
     } catch (error) {
