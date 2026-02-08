@@ -10,15 +10,12 @@ module.exports = async (req, res) => {
     const API_KEY = '0wcTdKgTcKwKNXBUaY7EXJ79MwFNyn1i';
     const windyUrl = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lng},150&include=images,location,player&limit=40`;
 
-    // Logowanie dla panelu Vercel
-    console.log(`Pobieranie dla: ${lat}, ${lng}`);
-
-    // Dynamiczny import node-fetch dla pewności (jeśli środowisko tego wymaga)
-    // Ale w Node 18+ fetch jest wbudowany. Spróbujmy standardowego fetcha w bloku try.
-    
+    // Tutaj musimy "udawać" przeglądarkę, wysyłając Origin
     const response = await fetch(windyUrl, {
       headers: {
-        'x-windy-key': API_KEY
+        'x-windy-key': API_KEY,
+        // WAŻNE: Przedstawiamy się domeną, którą wpisałeś w panelu Windy!
+        'Origin': 'https://webcam-explorer-ten.vercel.app' 
       }
     });
 
@@ -29,11 +26,15 @@ module.exports = async (req, res) => {
     }
 
     const data = await response.json();
+    
+    // Dodajemy nagłówki CORS, żeby Twoja mapa mogła odebrać dane
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    
     return res.status(200).json(data);
 
   } catch (error) {
     console.error('CRASH:', error);
-    // To wyśle treść błędu do Twojej konsoli w przeglądarce
     return res.status(500).json({ 
       error: 'Serwer Vercel napotkał błąd', 
       details: error.message 
